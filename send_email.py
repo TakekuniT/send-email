@@ -5,6 +5,7 @@ import time
 import random
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,7 +27,14 @@ def formatBody(name):
 
 <p>In the meantime, please fill out this super duper quick <a href="{FORM_LINK}">form</a> so we can learn more about your experience and to join our exclusive waitlist <a href="{WAITLIST_LINK}">here</a>, that would be really helpful! 😊</p>
 
-<p>Thank you,<br>Taki</p>"""
+<p>Thank you,<br>Taki</p>
+
+<br>
+<img src="cid:muxen_banner" alt="Muxen" style="max-width:300px;"><br>
+<strong>Takekuni Tanemori</strong><br>
+Co-Founder<br>
+<span style="color:rgb(102,102,102);"><a href="mailto:takekuni@muxen.net" style="color:rgb(102,102,102);text-decoration:none;">takekuni@muxen.net</a></span><br>
+<span style="color:rgb(102,102,102);"><a href="https://www.linkedin.com/in/takekuni-tanemori/" style="color:rgb(102,102,102);text-decoration:none;">LinkedIn</a></span>"""
 
 def parseCSV(path):
     results = []
@@ -42,11 +50,18 @@ def parseCSV(path):
 def sendEmail(content, recipient, sender="takekuni@muxen.net"):
     app_password = os.getenv("APP_PASSWORD")
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Partnership Opportunity for Tech Creators 🚀"
+    msg = MIMEMultipart("related")
+    msg["Subject"] = "Sponsorships w/ OpenAI, AWS, Replit, Cursor, and more"
     msg["From"] = sender
     msg["To"] = recipient
+
     msg.attach(MIMEText(content, "html"))
+
+    with open("asset/MuxenBanner.png", "rb") as f:
+        banner = MIMEImage(f.read())
+        banner.add_header("Content-ID", "<muxen_banner>")
+        banner.add_header("Content-Disposition", "inline")
+        msg.attach(banner)
 
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.ehlo()
@@ -64,9 +79,9 @@ def sendBatch(contacts, delay_min=3, delay_max=8):
 if __name__ == '__main__':
     contacts = parseCSV('emailCSV/cs_emails_thousand.csv')
     print(f"Loaded {len(contacts)} contacts")
-    print(contacts[:3])
     
-    sampleList = [ { 'username': 'taki', 'email':'takekuni@tanemori.org' } ]
+    
+    sampleList = [ { 'username': 'taki', 'email':'takekuni@tanemori.org' }, {'username': 'aidan', 'email':'aidan.ouckama@gmail.com'} ]
     sendBatch(sampleList)
 
  
