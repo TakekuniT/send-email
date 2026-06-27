@@ -1,4 +1,13 @@
 import csv
+import os
+import smtplib
+import time
+import random
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from dotenv import load_dotenv
+
+load_dotenv()
 
 CALENDLY_LINK = "https://calendly.com/takekuni-muxen/15-minute-meeting"
 FORM_LINK = "https://forms.gle/8Nhexr75ftWUEddx5"
@@ -31,11 +40,33 @@ def parseCSV(path):
     return results
     
 def sendEmail(content, recipient, sender="takekuni@muxen.net"):
-    None
+    app_password = os.getenv("APP_PASSWORD")
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "Partnership Opportunity for Tech Creators 🚀"
+    msg["From"] = sender
+    msg["To"] = recipient
+    msg.attach(MIMEText(content, "html"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.ehlo()
+        server.starttls()
+        server.login(sender, app_password)
+        server.sendmail(sender, recipient, msg.as_string())
+
+def sendBatch(contacts, delay_min=3, delay_max=8):
+    for contact in contacts:
+        body = formatBody(contact["username"])
+        sendEmail(body, contact["email"])
+        print(f"Sent to {contact['email']}")
+        time.sleep(random.uniform(delay_min, delay_max))
 
 if __name__ == '__main__':
     contacts = parseCSV('emailCSV/cs_emails_thousand.csv')
     print(f"Loaded {len(contacts)} contacts")
     print(contacts[:3])
+    
+    sampleList = [ { 'username': 'taki', 'email':'takekuni@tanemori.org' } ]
+    sendBatch(sampleList)
 
  
